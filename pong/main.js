@@ -8,7 +8,7 @@
         //Alto del tablero
         this.height = height;
         // estan jugando
-        this.playing=false;
+        this.playing = false;
         //Las barras laterales del juego
         this.bars = [];
         //La pelota del juego
@@ -25,6 +25,20 @@
         }
     }  
 })();
+// Se cre la funcion de pelota
+(function() {
+    self.Ball = function(x, y, radius, board) {
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.board = board;
+        this.speed_y = 0;
+        this.speed_x = 3;    
+
+        board.ball = this;
+        this.kind = "circle";
+    }
+});
 // se crean el constructor de la barra y la dibuja
 (function() {
     self.Bar = function(x, y, width, height, board) {
@@ -41,16 +55,16 @@
     }
 
     // se dibujan los elementos(barras y pelota) 
-    self.Board.prototype = {
+    self.Bar.prototype = {
         //se le da movimiento a las barras
-        bown: function(){
-          this.y+=this.speed  
+        down: function() {
+            this.y += this.speed;
         },
-        up: function(){
-          this.y-= this.speed;
+        up: function() {
+            this.y -= this.speed;
         },
-        toString: function(){
-            return"x: "+this.x +"y: "+this.y;
+        toString: function() {
+            return "x:" + this.x + "y:" + this.y;
         }
     }
 })();
@@ -70,49 +84,68 @@
     }
     //Se modifica el prototype 
     self.BoardView.prototype = {
-        draw: function(){
+        clean: function() {
+            this.ctx.clearRect(0, 0, this.board.width, this.board.height);
+        },
+        draw: function() {
             for (var i = this.board.elements.length - 1; i >= 0; i--) {
                 var el = this.board.elements[i];
 
                 draw(this.ctx, el);
             };
-        } 
+        },
+        //se encarga que el juego funciones
+        play: function(){
+            //se limpia el tablero
+            this.clean();
+            //dibuja todos los elementos 
+            this.draw()
+        }  
     }
     //dibuja los elementos (barras) 
-    function draw(ctx, element){
-        if(element !== null && element.hasOwnProperty("kind")){
-            switch (element.kind) {
-                case "rectangle":
-                    ctx.fillRect(element.x, element.y, element.width, element.height);
-                    break;;
-            } 
+    function draw(ctx, element) {
+        switch (element.kind) {
+            case "rectangle":
+                ctx.fillRect(element.x, element.y, element.width, element.height);
+                break;
+            case "circle":
+                ctx.beginPath();
+                ctx.arc(element.x, element.y, element.radius, 0, 7);
+                ctx.fill();
+                ctx.closePath();
+                break;
         }
     }
 })();
-//se instancia un nuevo objeto de la clase Tablero
+//se crea un objeto Tablero
 var board = new Board(800,400);
 //se inicializan la barras
-var bar = new Bar(20,100,40,100, board);
-var bar = new Bar(700,100,40,100, board);
+var bar = new Bar(20, 100, 10, 100, board);
+var bar_2 = new Bar(700, 100, 10, 100, board);
 var canvas = document.getElementById('canvas');
 //se instancia un nuevo objeto de la clase BoardView
 var board_view = new BoardView(canvas, board);
+var ball = new Ball(350, 100,10, board);
 
-document.addEventListener("keydown", function(ev){
+//Evento que esta escuchando cuando cuando se preciona una tecla
+document.addEventListener("keydown", function(ev) {
     console.log(ev.keyCode);
-    if(encodeURI.keyCode==38){
+    if (ev.keyCode === 87) {
+        ev.preventDefault();
         bar.up();
+    } else if (ev.keyCode === 83) {
+        bar.down();
+    }else if (ev.keyCode === 38) {
+        bar_2.up();
+    } else if (ev.keyCode === 40) {
+        bar_2.down();
     }
-    else if(ev.keyCode==40){
-        bar.down()
-    }
-    console.log(bar.toString());
 });
-self.addEventListener("load", main);
 
+//animacion de la barra
+window.requestAnimationFrame(controller);
 //---------El controlador------------------- 
-function main(){
-    //dibuja todos los elementos
-    console.log(board); 
-    board_view.draw();
+function controller() {
+    board_view.play();
+    window.requestAnimationFrame(controller);
 }
