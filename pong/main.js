@@ -37,16 +37,20 @@
         this.board.bars.push(this);
         //se dibuja la figura
         this.kind = "rectangle";
-     
+        this.speed = 10;
     }
 
     // se dibujan los elementos(barras y pelota) 
     self.Board.prototype = {
+        //se le da movimiento a las barras
         bown: function(){
-
+          this.y+=this.speed  
         },
         up: function(){
-
+          this.y-= this.speed;
+        },
+        toString: function(){
+            return"x: "+this.x +"y: "+this.y;
         }
     }
 })();
@@ -85,18 +89,29 @@
         }
     }
 })();
+//se instancia un nuevo objeto de la clase Tablero
+var board = new Board(800,400);
+//se inicializan la barras
+var bar = new Bar(20,100,40,100, board);
+var bar = new Bar(700,100,40,100, board);
+var canvas = document.getElementById('canvas');
+//se instancia un nuevo objeto de la clase BoardView
+var board_view = new BoardView(canvas, board);
+
+document.addEventListener("keydown", function(ev){
+    console.log(ev.keyCode);
+    if(encodeURI.keyCode==38){
+        bar.up();
+    }
+    else if(ev.keyCode==40){
+        bar.down()
+    }
+    console.log(bar.toString());
+});
 self.addEventListener("load", main);
 
 //---------El controlador------------------- 
 function main(){
-    //se instancia un nuevo objeto de la clase Tablero
-    var board = new Board(800,400);
-    //se inicializan la barras
-    var bar = new Bar(20,100,40,100, board);
-    var bar = new Bar(700,100,40,100, board);
-    var canvas = document.getElementById('canvas');
-    //se instancia un nuevo objeto de la clase BoardView
-    var board_view = new BoardView(canvas, board);
     //dibuja todos los elementos
     console.log(board); 
     board_view.draw();
