@@ -13,12 +13,14 @@
         this.bars = [];
         //La pelota del juego
         this.ball = null;
+        //muesta si esta jugando
+        this.playing = false;
     }
     //se modifica el protopito de la clase 
     self.Board.prototype = {
         // metodos para obtener los elementos-barras del juego
         get elements() {
-            var elements = this.bars;
+            var elements = this.bars.map(function(bar) { return bar; });
             //Se agrega una pelota
             elements.push(this.ball);
             return elements;
@@ -33,11 +35,20 @@
         this.radius = radius;
         this.board = board;
         this.speed_y = 0;
-        this.speed_x = 3;    
+        this.speed_x = 3;
+        this.board = board;
+        this.direction = 1;    
 
         board.ball = this;
         this.kind = "circle";
     }
+    //se le da movimiento a al pelota
+    self.Ball.prototype = {
+        move: function() {
+            this.x += (this.speed_x * this.direction);
+            this.y += (this.speed_y);
+        }
+    }    
 });
 // se crean el constructor de la barra y la dibuja
 (function() {
@@ -96,10 +107,14 @@
         },
         //se encarga que el juego funciones
         play: function(){
-            //se limpia el tablero
-            this.clean();
-            //dibuja todos los elementos 
-            this.draw()
+            if (this.board.playing) {
+                //se limpia el tablero
+                this.clean();
+                //dibuja todos los elementos 
+                this.draw()
+                //mueve la pelota
+                this.board.ball.move();
+            }
         }  
     }
     //dibuja los elementos (barras) 
@@ -125,25 +140,31 @@ var bar_2 = new Bar(700, 100, 10, 100, board);
 var canvas = document.getElementById('canvas');
 //se instancia un nuevo objeto de la clase BoardView
 var board_view = new BoardView(canvas, board);
-var ball = new Ball(350, 100,10, board);
+var ball = new Ball(350, 100, 10, board);
 
 //Evento que esta escuchando cuando cuando se preciona una tecla
 document.addEventListener("keydown", function(ev) {
-    console.log(ev.keyCode);
-    if (ev.keyCode === 87) {
+    if (ev.keyCode === 38) {
         ev.preventDefault();
         bar.up();
-    } else if (ev.keyCode === 83) {
-        bar.down();
-    }else if (ev.keyCode === 38) {
-        bar_2.up();
     } else if (ev.keyCode === 40) {
+        ev.preventDefault();
+        bar.down();
+    } else if (ev.keyCode === 87) {
+        ev.preventDefault();
+        bar_2.up();
+    } else if (ev.keyCode === 83) {
+        ev.preventDefault();
         bar_2.down();
+    } else if (ev.keyCode === 32) {
+        ev.preventDefault();
+        board.playing = !board.playing;
     }
 });
-
+board_view.draw();
 //animacion de la barra
 window.requestAnimationFrame(controller);
+
 //---------El controlador------------------- 
 function controller() {
     board_view.play();
